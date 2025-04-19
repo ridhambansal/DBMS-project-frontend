@@ -117,6 +117,7 @@ export default function CafeBooking() {
       setError(null);
       await updateCafeBooking(bookingId, {
         user_id: user.user_id,
+        cafe_name: form.cafe_name,          // ← added so backend can check conflicts
         booking_date: isoDate(form.booking_date),
         details: form.details,
       });
