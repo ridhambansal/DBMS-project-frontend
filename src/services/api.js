@@ -182,5 +182,37 @@ export const getMeetingRooms = async () => {
       throw error.response ? error.response.data : error;
     }
   };
+
+
+  export async function getSeatBookings() {
+    const response = await api.get('/seat-bookings');
+    return response.data;
+  }
+  
+  export async function createSeatBooking(bookingData) {
+    const response = await api.post('/seat-bookings', bookingData);
+    return response.data;
+  }
+  
+  export async function updateSeatBooking(id, bookingData) {
+    const response = await api.patch(`/seat-bookings/${id}`, bookingData);
+    return response.data;
+  }
+  
+  export async function deleteSeatBooking(id) {
+    const response = await api.delete(`/seat-bookings/${id}`);
+    return response.data;
+  }
+
+  export async function getFloors() {
+    const res = await api.get('/floors');
+    return res.data; // [{ floor_number: 1 }, ...]
+  }
+  
+  export async function getAvailableSeats(floor) {
+    const res = await api.get(`/floors/${floor}/seats/available`);
+    return res.data; // [{ seat_number: 1 }, ...]
+  }
+  
   
   export default api;

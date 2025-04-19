@@ -10,6 +10,7 @@ import { CssBaseline } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import CafeBooking from './components/CafeBooking'
+import SeatBookings from './components/SeatBooking'; 
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/my-bookings" element={<MeetingRoomBookings />} />
           <Route path="/events" element={<Events />} />
           <Route path="/cafeteria" element={<CafeBooking />} />
+          <Route path="/seat-booking" element={<SeatBookings/>} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
