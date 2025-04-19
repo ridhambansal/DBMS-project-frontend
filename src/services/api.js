@@ -90,6 +90,40 @@ export async function deleteEvent(id) {
   return res.json();
 };
 
+export const fetchCafes = async () => {
+  const res = await api.get('/cafeteria-booking/cafes');
+  return res.data;
+};
+
+// Fetch existing cafe bookings for a user
+export const fetchCafeBookings = async (user_id) => {
+  const res = await api.get(`/cafeteria-booking/bookings?user_id=${user_id}`);
+  return res.data; // [{ booking_id, cafe_name, booking_date, details }]
+};
+
+// Check if a cafe slot is available
+export const checkCafeAvailability = async (dto) => {
+  const res = await api.post('/cafeteria-booking/availability', dto);
+  return res.data; // { available: boolean }
+};
+
+// Create a new cafe booking
+export const bookCafe = async (dto) => {
+  const res = await api.post('/cafeteria-booking', dto);
+  return res.data; // { Booking ID, Status }
+};
+
+// Update an existing booking
+export const updateCafeBooking = async (id, dto) => {
+  const res = await api.patch(`/cafeteria-booking/${id}`, dto);
+  return res.data; // { success: true }
+};
+
+// Cancel a booking
+export const cancelCafeBooking = async (id, dto) => {
+  const res = await api.delete(`/cafeteria-booking/${id}`, { data: dto });
+  return res.data; // { Status: 'Booking successfully canceled' }
+};
 
 
 

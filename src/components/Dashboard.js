@@ -44,7 +44,17 @@ const Dashboard = () => {
       >
         Manage Events
       </Button>
+
+      <Button
+      variant="contained"
+      component={RouterLink}
+      to="/cafeteria"
+    >
+      Manage Cafeteria
+    </Button>
     </Container>
+
+   
   );
 };
 
