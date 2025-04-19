@@ -9,9 +9,6 @@ const api = axios.create({
   },
 });
 
-
-
-
 export const register = async (userData) => {
   try {
     const response = await api.post('/auth/register', userData);
@@ -66,7 +63,6 @@ export async function updateEvent(id, eventData) {
 };
 
 export async function getEvents() {
-  // use backticks, not single quotes, for the template literal
   const res = await fetch(`${API_URL}/events`, {
     headers: {
       'Content-Type': 'application/json',
@@ -95,42 +91,96 @@ export const fetchCafes = async () => {
   return res.data;
 };
 
-// Fetch existing cafe bookings for a user
 export const fetchCafeBookings = async (user_id) => {
   const res = await api.get(`/cafeteria-booking/bookings?user_id=${user_id}`);
-  return res.data; // [{ booking_id, cafe_name, booking_date, details }]
+  return res.data;
 };
 
-// Check if a cafe slot is available
 export const checkCafeAvailability = async (dto) => {
   const res = await api.post('/cafeteria-booking/availability', dto);
-  return res.data; // { available: boolean }
+  return res.data; 
 };
 
-// Create a new cafe booking
 export const bookCafe = async (dto) => {
   const res = await api.post('/cafeteria-booking', dto);
-  return res.data; // { Booking ID, Status }
+  return res.data; 
 };
 
-// Update an existing booking
 export const updateCafeBooking = async (id, dto) => {
   const res = await api.patch(`/cafeteria-booking/${id}`, dto);
-  return res.data; // { success: true }
+  return res.data; 
 };
 
-// Cancel a booking
 export const cancelCafeBooking = async (id, dto) => {
   const res = await api.delete(`/cafeteria-booking/${id}`, { data: dto });
-  return res.data; // { Status: 'Booking successfully canceled' }
+  return res.data;
 };
 
+export const getUsers = async () => {
+  try {
+    const response = await api.get('/users');
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error;
+  }
+};
 
-
-
-
-
-
-
-
-export default api;
+export const getMeetingRooms = async () => {
+    try {
+      const response = await api.get('/meeting-rooms');
+      return response.data;
+    } catch (error) {
+      throw error.response ? error.response.data : error;
+    }
+  };
+  
+  export const getMeetingRoomById = async (id) => {
+    try {
+      const response = await api.get(`/meeting-rooms/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response ? error.response.data : error;
+    }
+  };
+  
+  export const bookMeetingRoom = async (bookingData) => {
+    try {
+      const response = await api.post('/meeting-rooms/book', bookingData);
+      return response.data;
+    } catch (error) {
+      throw error.response ? error.response.data : error;
+    }
+  };
+  
+  export const getMeetingRoomBookings = async (userId, date) => {
+    try {
+      const params = {};
+      if (userId) params.userId = userId;
+      if (date) params.date = date;
+      
+      console.log('Requesting bookings with params:', params); // Add this for debugging
+      
+      const response = await api.get('/meeting-rooms/bookings', { params });
+      console.log('Received bookings:', response.data); // Add this for debugging
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching bookings:', error); // Add this for debugging
+      throw error.response ? error.response.data : error;
+    }
+  };
+  
+  export const cancelMeetingRoomBooking = async (id) => {
+    try {
+      if (!id) {
+        throw new Error('Booking ID is required');
+      }
+      console.log(`Cancelling booking with ID: ${id}`);
+      const response = await api.delete(`/meeting-rooms/bookings/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      throw error.response ? error.response.data : error;
+    }
+  };
+  
+  export default api;
