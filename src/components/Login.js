@@ -22,8 +22,9 @@ const Login = () => {
     validationSchema,
     onSubmit: async (values) => {
       try {
-        await login(values);
-        navigate('/dashboard');
+        const user = await login(values);
+        if(user.access_level_id===3) navigate('/admin');
+        else navigate('/dashboard');
       } catch (err) {
         setError(err.message || 'Login failed. Please check your credentials.');
       }

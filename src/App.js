@@ -11,6 +11,10 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import CafeBooking from './components/CafeBooking'
 import SeatBookings from './components/SeatBooking'; 
+import AdminMeetingRoom from './components/Admin/AdminMeetingRoom';
+import AdminFloor       from './components/Admin/AdminFloor';
+import AdminCafe        from './components/Admin/AdminCafe';
+import AdminHome from './components/Admin/AdminHome';
 
 function App() {
   return (
@@ -26,6 +30,10 @@ function App() {
           <Route path="/events" element={<Events />} />
           <Route path="/cafeteria" element={<CafeBooking />} />
           <Route path="/seat-booking" element={<SeatBookings/>} />
+          <Route path="/admin/meeting-rooms" element={<AdminMeetingRoom />} />
+          <Route path="/admin/floor"           element={<AdminFloor />} />
+          <Route path="/admin/cafe"            element={<AdminCafe />} />
+          <Route path="/admin" element={<AdminHome />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>

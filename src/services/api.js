@@ -214,5 +214,36 @@ export const getMeetingRooms = async () => {
     return res.data; // [{ seat_number: 1 }, ...]
   }
   
+  export const createAdminMeetingRoom = async (dto) => {
+    const user = getUser();
+    const response = await api.post(
+      '/admin/meeting-rooms',
+      dto,
+      { headers: { 'x-user-id': user.user_id } }
+    );
+    return response.data;
+  };
+  
+  export const createAdminFloor = async (dto) => {
+    const user = getUser();
+    const response = await api.post(
+      '/admin/floors',
+      dto,
+      { headers: { 'x-user-id': user.user_id } }
+    );
+    return response.data;
+  };
+  
+  export const createAdminCafe = async (dto) => {
+    const user = getUser();
+    const response = await api.post(
+      '/admin/cafes',
+      dto,
+      { headers: { 'x-user-id': user.user_id } }
+    );
+    return response.data;
+  };
+
+
   
   export default api;
