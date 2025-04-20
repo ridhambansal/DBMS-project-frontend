@@ -47,7 +47,9 @@ export default function SeatBookings() {
   const loadBookings = async () => {
     try {
       const data = await getSeatBookings();
-      setBookings(data);
+      console.log("🔍 raw seat‑bookings payload:", data);
+      const arr = Array.isArray(data) ? data : [data];
+    setBookings(arr);
     } catch (err) {
       console.error(err);
     }
@@ -56,7 +58,9 @@ export default function SeatBookings() {
   const loadFloors = async () => {
     try {
       const data = await getFloors();
-      setFloors(data.map(f => f.floor_number));
+      const arr = Array.isArray(data) ? data : [data];
+
+    setFloors(arr.map(f => f.floor_number));
     } catch (err) {
       console.error(err);
     }
@@ -69,7 +73,8 @@ export default function SeatBookings() {
     }
     try {
       const data = await getAvailableSeats(floor);
-      setAvailableSeats(data.map(s => s.seat_number));
+      const arr = Array.isArray(data) ? data : [data];
+      setAvailableSeats(arr.map(s => s.seat_number));
     } catch (err) {
       console.error(err);
     }
@@ -243,7 +248,7 @@ export default function SeatBookings() {
               </TableRow>
             ))}
             {bookings.length === 0 && (
-              <TableRow>
+              <TableRow key="no-bookings">
                 <TableCell colSpan={6} align="center">
                   No bookings yet.
                 </TableCell>
