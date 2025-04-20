@@ -244,6 +244,27 @@ export const getMeetingRooms = async () => {
     return response.data;
   };
 
-
+  export const getUnreadNotifications = async (userId) => {
+    try {
+      console.log(`Fetching unread notifications for user ${userId}`);
+      const response = await api.get(`/notifications?userId=${userId}`);
+      console.log('Notification response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      throw error.response ? error.response.data : error;
+    }
+  };
   
+  export const markNotificationAsRead = async (notificationId, userId) => {
+    try {
+      console.log(`Marking notification ${notificationId} as read for user ${userId}`);
+      const response = await api.post(`/notifications/${notificationId}/read?userId=${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      throw error.response ? error.response.data : error;
+    }
+  };
+
   export default api;
