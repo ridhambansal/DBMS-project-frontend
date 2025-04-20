@@ -46,7 +46,7 @@ export default function SeatBookings() {
   // Load initial data
   const loadBookings = async () => {
     try {
-      const data = await getSeatBookings();
+      const data = await getSeatBookings(user.user_id);
       console.log("🔍 raw seat‑bookings payload:", data);
       const arr = Array.isArray(data) ? data : [data];
     setBookings(arr);

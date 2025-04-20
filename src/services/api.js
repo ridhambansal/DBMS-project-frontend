@@ -184,10 +184,13 @@ export const getMeetingRooms = async () => {
   };
 
 
-  export async function getSeatBookings() {
-    const response = await api.get('/seat-bookings');
-    return response.data;
-  }
+  export const getSeatBookings = async (userId) => {
+    if (!userId) {
+      throw new Error('User ID is required to fetch seat bookings');
+    }
+    const res = await api.get(`/seat-bookings/user/${userId}`);
+    return res.data;
+  };
   
   export async function createSeatBooking(bookingData) {
     const response = await api.post('/seat-bookings', bookingData);
