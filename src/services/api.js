@@ -226,12 +226,12 @@ export const getMeetingRooms = async () => {
   
   export const createAdminFloor = async (dto) => {
     const user = getUser();
-    const response = await api.post(
+    const res  = await api.post(
       '/admin/floors',
       dto,
       { headers: { 'x-user-id': user.user_id } }
     );
-    return response.data;
+    return res.data;
   };
   
   export const createAdminCafe = async (dto) => {
@@ -266,5 +266,70 @@ export const getMeetingRooms = async () => {
       throw error.response ? error.response.data : error;
     }
   };
+
+  export async function getAdminCafes() {
+    const res = await fetch(`${API_URL}/admin/cafes`, {
+      method: 'GET',
+      headers: adminHeaders(),
+    });
+    if (!res.ok) throw new Error(`Failed to fetch cafés: ${res.status}`);
+    return res.json();
+  }
+
+  export const updateAdminCafe = async (originalName, dto) => {
+    const user = getUser();
+    const response = await api.put(
+      `/admin/cafes/${encodeURIComponent(originalName)}`,
+      dto,
+      { headers: { 'x-user-id': user.user_id } }
+    );
+    return response.data;
+  };
+
+  function adminHeaders() {
+    const user = getUser();
+    return {
+      'Content-Type': 'application/json',
+      // this header is exactly what your AdminGuard is checking
+      'x-user-id': user?.user_id?.toString() ?? '',
+    };
+  };
+
+  export const getAdminFloors = async () => {
+    const user = getUser();
+    const res  = await api.get('/admin/floors', {
+      headers: { 'x-user-id': user.user_id }
+    });
+    return res.data;
+  };
+  
+  export const updateAdminFloor = async (originalFloorNumber, dto) => {
+    const user = getUser();
+    const res  = await api.put(
+      `/admin/floors/${originalFloorNumber}`,   // matches @Put(':floor_number') :contentReference[oaicite:0]{index=0}&#8203;:contentReference[oaicite:1]{index=1}
+      dto,
+      { headers: { 'x-user-id': user.user_id } }
+    );
+    return res.data;
+  };
+  
+  export const getAdminMeetingRooms = async () => {
+    const user = getUser();
+    const res  = await api.get('/admin/meeting-rooms', {
+      headers: { 'x-user-id': user.user_id }
+    });
+    return res.data;
+  };
+  
+  export const updateAdminMeetingRoom = async (originalId, dto) => {
+    const user = getUser();
+    const res  = await api.put(
+      `/admin/meeting-rooms/${originalId}`,     // matches @Put(':id') :contentReference[oaicite:2]{index=2}&#8203;:contentReference[oaicite:3]{index=3}
+      dto,
+      { headers: { 'x-user-id': user.user_id } }
+    );
+    return res.data;
+  };
+  
 
   export default api;
