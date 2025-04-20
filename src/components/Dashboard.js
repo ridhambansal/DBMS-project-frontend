@@ -83,14 +83,18 @@ const Dashboard = () => {
                   <Button 
                     size="small" 
                     onClick={() => navigate('/meeting-rooms')}
-                    sx={{ color: '#111' }}
+                    disabled={user.access_level_id === 1}
+                    title={user.access_level_id === 1 ? 'Not authorized' : undefined}
+                    sx={{ color: user.access_level_id === 1 ? 'grey.500' : '#111' }}
                   >
                     View Rooms
                   </Button>
                   <Button 
                     size="small" 
                     onClick={() => navigate('/my-bookings')}
-                    sx={{ color: '#111' }}
+                    disabled={user.access_level_id === 1}
+                    title={user.access_level_id === 1 ? 'Not authorized' : undefined}
+                    sx={{ color: user.access_level_id === 1 ? 'grey.500' : '#111' }}
                   >
                     My Bookings
                   </Button>
