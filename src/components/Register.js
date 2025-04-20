@@ -31,7 +31,12 @@ const Register = () => {
     onSubmit: async (values) => {
       try {
         await register(values);
-        navigate('/dashboard');
+        if (values.access_level_id === 3 || values.access_level_id === '3') {
+          navigate('/login');
+        } else {
+          navigate('/dashboard');
+        }
+       
       } catch (err) {
         setError(err.message || 'Registration failed. Please try again.');
       }
@@ -176,15 +181,17 @@ const Register = () => {
                 onChange={formik.handleChange}
                 size="small"
                 renderValue={(selected) => {
-                  if (!selected) {
-                    return <em>Select role</em>;
-                  }
-                  return selected === 1 ? 'Employee' : 'Manager';
+                  if (!selected) return <em>Select role</em>;
+                  if (selected === 1 || selected === '1') return 'Employee';
+                  if (selected === 2 || selected === '2') return 'Manager';
+                  if (selected === 3 || selected === '3') return 'Admin';
+                  return 'Select role';
                 }}
               >
                 <MenuItem value="" disabled><em>Select role</em></MenuItem>
                 <MenuItem value={1}>Employee</MenuItem>
                 <MenuItem value={2}>Manager</MenuItem>
+                <MenuItem value={3}>Admin</MenuItem>
               </Select>
               {formik.touched.access_level_id && formik.errors.access_level_id && (
                 <Typography variant="caption" color="error">
