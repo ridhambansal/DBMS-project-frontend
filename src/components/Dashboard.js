@@ -92,9 +92,7 @@ const Dashboard = () => {
                   <Button 
                     size="small" 
                     onClick={() => navigate('/my-bookings')}
-                    disabled={user.access_level_id === 1}
-                    title={user.access_level_id === 1 ? 'Not authorized' : undefined}
-                    sx={{ color: user.access_level_id === 1 ? 'grey.500' : '#111' }}
+                    sx={{ color: '#111' }}
                   >
                     My Bookings
                   </Button>
