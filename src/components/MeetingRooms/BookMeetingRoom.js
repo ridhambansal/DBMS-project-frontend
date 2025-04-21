@@ -9,18 +9,26 @@ import {
   Alert, 
   CircularProgress,
   Grid,
-  Container,
-  MenuItem,
-  Select,
-  FormControl,
   Paper,
   Chip,
-  Stack
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  IconButton,
+  Divider
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { bookMeetingRoom, getUser, getUsers } from '../../services/api';
+
+// Import icons
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
+import PeopleIcon from '@mui/icons-material/People';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 
 const validationSchema = Yup.object({
   booking_date: Yup.date().required('Meeting date and time is required'),
@@ -42,9 +50,12 @@ const BookMeetingRoom = ({ room, onBookingComplete }) => {
   const [users, setUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [selectedParticipants, setSelectedParticipants] = useState([]);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   
   const currentUser = getUser();
+  
+  // Always count the current user as a participant
+  const totalParticipants = selectedParticipants.length + 1; // +1 for current user
+  const isOverCapacity = totalParticipants > safeRoom.capacity;
 
   // Fetch users from the database
   useEffect(() => {
@@ -73,6 +84,12 @@ const BookMeetingRoom = ({ room, onBookingComplete }) => {
     validationSchema,
     onSubmit: async (values) => {
       try {
+        // Check if capacity is exceeded
+        if (isOverCapacity) {
+          setError(`Cannot book room. The number of participants (${totalParticipants}) exceeds room capacity (${safeRoom.capacity}).`);
+          return;
+        }
+        
         setLoading(true);
         setError('');
         
@@ -119,7 +136,6 @@ const BookMeetingRoom = ({ room, onBookingComplete }) => {
         setSelectedParticipants([...selectedParticipants, selectedUser]);
       }
     }
-    setDropdownOpen(false);
   };
 
   const handleRemoveParticipant = (userId) => {
@@ -127,199 +143,218 @@ const BookMeetingRoom = ({ room, onBookingComplete }) => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ py: 2 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Book Meeting Room
-      </Typography>
-      
-      <Box sx={{ mt: 4 }}>
-        <Typography variant="h5" component="h2" gutterBottom>
-          {safeRoom.room_name} - Floor {safeRoom.floor_number}
-        </Typography>
+    <Paper sx={{ maxWidth: '800px', mx: 'auto', my: 2, p: 3, borderRadius: 2 }}>
+      {/* Header with room info */}
+      <Box sx={{ 
+        pb: 2, 
+        mb: 3, 
+        borderBottom: '1px solid #e0e0e0', 
+        display: 'flex', 
+        alignItems: 'center',
+        justifyContent: 'space-between'
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <MeetingRoomIcon color="primary" sx={{ mr: 1 }} />
+          <Typography variant="h6">
+            Book: {safeRoom.room_name}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', ml: 1.5 }}>
+            <LocationOnIcon sx={{ fontSize: 16, color: 'text.secondary', mr: 0.5 }} />
+            <Typography variant="body2" color="text.secondary">
+              Floor {safeRoom.floor_number}
+            </Typography>
+          </Box>
+        </Box>
         
-        <Typography variant="body1" gutterBottom>
-          Capacity: {safeRoom.capacity} people
-        </Typography>
+        <Chip 
+          icon={<PeopleIcon />}
+          label={`${totalParticipants}/${safeRoom.capacity}`}
+          color={isOverCapacity ? "error" : "primary"}
+          variant="outlined"
+        />
       </Box>
       
-      {error && (
-        <Alert severity="error" sx={{ my: 2 }}>
-          {error}
-        </Alert>
+      {/* Alerts */}
+      {(error || success || isOverCapacity) && (
+        <Box sx={{ mb: 3 }}>
+          {error && <Alert severity="error">{error}</Alert>}
+          {success && <Alert severity="success">{success}</Alert>}
+          {isOverCapacity && !error && (
+            <Alert severity="warning">
+              Participants exceed room capacity
+            </Alert>
+          )}
+        </Box>
       )}
       
-      {success && (
-        <Alert severity="success" sx={{ my: 2 }}>
-          {success}
-        </Alert>
-      )}
-      
-      <Box component="form" onSubmit={formik.handleSubmit} sx={{ mt: 4 }}>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle1" gutterBottom sx={{ ml: 1 }}>
-                Meeting Date & Time
-              </Typography>
+      {/* Main form */}
+      <Box component="form" onSubmit={formik.handleSubmit}>
+        <Grid container spacing={4}>
+          {/* Left side - Date & Details */}
+          <Grid item xs={12} md={6}>
+            <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
+              Date & Time
+            </Typography>
+            
+            <Box sx={{ 
+              border: '1px solid #ddd', 
+              borderRadius: 1, 
+              p: 1, 
+              mb: 3,
+              display: 'flex',
+              alignItems: 'center'
+            }}>
+              <TextField
+                fullWidth
+                variant="standard"
+                value={formik.values.booking_date ? new Date(formik.values.booking_date).toLocaleString() : ''}
+                InputProps={{
+                  readOnly: true,
+                  disableUnderline: true,
+                }}
+              />
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DateTimePicker
                   value={formik.values.booking_date}
                   onChange={(newValue) => {
                     formik.setFieldValue('booking_date', newValue);
                   }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      fullWidth
-                      error={formik.touched.booking_date && Boolean(formik.errors.booking_date)}
-                      helperText={formik.touched.booking_date && formik.errors.booking_date}
-                      sx={{ 
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: '4px'
-                        } 
-                      }}
-                    />
+                  components={{
+                    OpenPickerIcon: CalendarTodayIcon
+                  }}
+                  renderInput={({ inputRef, inputProps, InputProps }) => (
+                    <IconButton ref={inputRef}>
+                      <CalendarTodayIcon color="primary" />
+                    </IconButton>
                   )}
                 />
               </LocalizationProvider>
             </Box>
+            
+            <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
+              Meeting Details
+            </Typography>
+            
+            <TextField
+              fullWidth
+              multiline
+              rows={5}
+              placeholder="Enter meeting details and agenda"
+              id="details"
+              name="details"
+              value={formik.values.details}
+              onChange={formik.handleChange}
+              error={formik.touched.details && Boolean(formik.errors.details)}
+              helperText={formik.touched.details && formik.errors.details}
+              sx={{ mb: 2 }}
+            />
           </Grid>
           
-          <Grid item xs={12}>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle1" gutterBottom sx={{ ml: 1 }}>
-                Meeting Details
-              </Typography>
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                placeholder="Meeting Details"
-                id="details"
-                name="details"
-                value={formik.values.details}
-                onChange={formik.handleChange}
-                error={formik.touched.details && Boolean(formik.errors.details)}
-                helperText={formik.touched.details && formik.errors.details}
-                sx={{ 
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '4px'
-                  } 
-                }}
+          {/* Right side - Participants */}
+          <Grid item xs={12} md={6}>
+            <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
+              Participants
+            </Typography>
+            
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel id="participant-label">Add Participant</InputLabel>
+              <Select
+                labelId="participant-label"
+                label="Add Participant"
+                displayEmpty
+                value=""
+                onChange={handleParticipantSelect}
+                disabled={isOverCapacity}
+              >
+                {loadingUsers ? (
+                  <MenuItem disabled>
+                    <CircularProgress size={16} sx={{ mr: 1 }} />
+                    Loading users...
+                  </MenuItem>
+                ) : (
+                  users
+                    .filter(user => !selectedParticipants.some(p => p.user_id === user.user_id))
+                    .map(user => (
+                      <MenuItem key={user.user_id} value={user.user_id}>
+                        {user.first_name} {user.last_name}
+                      </MenuItem>
+                    ))
+                )}
+              </Select>
+            </FormControl>
+            
+            <Box sx={{ 
+              p: 2,
+              mb: 2,
+              minHeight: '100px',
+              border: '1px solid #e0e0e0',
+              borderRadius: 1
+            }}>
+              {/* Current user */}
+              <Chip
+                label={`You (${currentUser.first_name})`}
+                color="primary"
+                sx={{ m: 0.5 }}
               />
-            </Box>
-          </Grid>
-          
-          <Grid item xs={12}>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle1" gutterBottom sx={{ ml: 1, color: 'primary.main' }}>
-                Participants
-              </Typography>
               
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <Select
-                  displayEmpty
-                  value=""
-                  onChange={handleParticipantSelect}
-                  open={dropdownOpen}
-                  onOpen={() => setDropdownOpen(true)}
-                  onClose={() => setDropdownOpen(false)}
-                  renderValue={() => "Add"}
-                  sx={{ 
-                    height: '50px',
-                    border: '1px solid #1976d2',
-                    borderRadius: '4px',
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      border: 'none'
-                    }
-                  }}
-                >
-                  {loadingUsers ? (
-                    <MenuItem disabled>
-                      <CircularProgress size={20} sx={{ mr: 1 }} />
-                      Loading users...
-                    </MenuItem>
-                  ) : (
-                    users
-                      .filter(user => !selectedParticipants.some(p => p.user_id === user.user_id))
-                      .map(user => (
-                        <MenuItem key={user.user_id} value={user.user_id}>
-                          {user.first_name} {user.last_name} ({user.email_id})
-                        </MenuItem>
-                      ))
-                  )}
-                </Select>
-              </FormControl>
+              {/* Selected participants */}
+              {selectedParticipants.map((user) => (
+                <Chip
+                  key={user.user_id}
+                  label={`${user.first_name} ${user.last_name}`}
+                  onDelete={() => handleRemoveParticipant(user.user_id)}
+                  sx={{ m: 0.5 }}
+                />
+              ))}
               
-              {selectedParticipants.length > 0 && (
-                <Paper variant="outlined" sx={{ p: 2, minHeight: '50px' }}>
-                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                    {selectedParticipants.map((user) => (
-                      <Chip
-                        key={user.user_id}
-                        label={`${user.first_name} ${user.last_name}`}
-                        onDelete={() => handleRemoveParticipant(user.user_id)}
-                        sx={{ m: 0.5 }}
-                      />
-                    ))}
-                  </Stack>
-                </Paper>
-              )}
-              
+              {/* Message when no additional participants */}
               {selectedParticipants.length === 0 && (
-                <Paper 
-                  variant="outlined" 
-                  sx={{ 
-                    p: 2, 
-                    minHeight: '50px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  <Typography variant="body2" color="text.secondary">
-                    No participants selected
-                  </Typography>
-                </Paper>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  No additional participants
+                </Typography>
               )}
             </Box>
+            
+            <Alert 
+              severity="info" 
+              icon={<PeopleIcon />}
+              sx={{ mb: 2 }}
+            >
+              You are automatically included as a participant
+            </Alert>
           </Grid>
         </Grid>
         
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+        <Divider sx={{ mt: 2, mb: 3 }} />
+        
+        {/* Footer with actions */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Button
-            variant="text"
+            variant="outlined"
             onClick={onBookingComplete}
-            sx={{ 
-              color: '#1976d2',
-              textTransform: 'uppercase',
-              fontWeight: 'bold'
-            }}
+            sx={{ textTransform: 'uppercase' }}
           >
-            CANCEL
+            Cancel
           </Button>
           
           <Button
             type="submit"
             variant="contained"
-            disabled={loading}
+            disabled={loading || isOverCapacity}
+            startIcon={loading ? <CircularProgress size={16} /> : <AccessTimeIcon />}
             sx={{ 
-              py: 1.5,
-              px: 4,
-              backgroundColor: '#000',
-              color: '#fff',
               textTransform: 'uppercase',
-              fontWeight: 'bold',
+              bgcolor: '#1976d2',
               '&:hover': {
-                backgroundColor: '#333',
+                bgcolor: '#1565c0',
               }
             }}
           >
-            {loading ? <CircularProgress size={24} color="inherit" /> : 'BOOK MEETING ROOM'}
+            {loading ? 'Booking...' : 'Book Room'}
           </Button>
         </Box>
       </Box>
-    </Container>
+    </Paper>
   );
 };
 

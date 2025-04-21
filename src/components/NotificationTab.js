@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Tab,
   Menu, 
   MenuItem, 
   Typography, 
@@ -8,8 +7,10 @@ import {
   Divider,
   CircularProgress,
   Badge,
-  Button
+  Button,
+  IconButton
 } from '@mui/material';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import { getUnreadNotifications, markNotificationAsRead, getUser } from '../services/api';
 
 const NotificationTab = () => {
@@ -22,6 +23,13 @@ const NotificationTab = () => {
 
   useEffect(() => {
     fetchNotificationsCount();
+    
+    // Set up interval to check for new notifications
+    const interval = setInterval(() => {
+      fetchNotificationsCount();
+    }, 60000); // Check every minute
+    
+    return () => clearInterval(interval);
   }, []);
 
   const fetchNotificationsCount = async () => {
@@ -31,7 +39,8 @@ const NotificationTab = () => {
       setLoading(true);
       setError(null);
       const data = await getUnreadNotifications(currentUser.user_id);
-      setNotificationsCount(data ? data.length : 0);
+      const notificationsArray = Array.isArray(data) ? data : (data ? [data] : []);
+      setNotificationsCount(notificationsArray.length);
     } catch (err) {
       console.error('Error fetching notification count:', err);
     } finally {
@@ -47,8 +56,11 @@ const NotificationTab = () => {
       setError(null);
       const data = await getUnreadNotifications(currentUser.user_id);
       console.log('Notifications received:', data);
-      setNotifications(data || []);
-      setNotificationsCount(data ? data.length : 0);
+      
+      // Ensure data is always treated as an array
+      const notificationsArray = Array.isArray(data) ? data : (data ? [data] : []);
+      setNotifications(notificationsArray);
+      setNotificationsCount(notificationsArray.length);
     } catch (err) {
       console.error('Error fetching notifications:', err);
       setError('Failed to load notifications');
@@ -57,8 +69,8 @@ const NotificationTab = () => {
     }
   };
 
-  const handleTabClick = (event) => {
-    // Only fetch notifications when tab is clicked
+  const handleButtonClick = (event) => {
+    // Only fetch notifications when button is clicked
     fetchNotifications();
     setAnchorEl(event.currentTarget);
   };
@@ -81,27 +93,24 @@ const NotificationTab = () => {
     handleClose();
   };
 
+  const open = Boolean(anchorEl);
+
   return (
     <>
-      <Button 
-        color="inherit" 
-        onClick={handleTabClick}
-        sx={{ 
-          height: '100%',
-          borderRadius: 0,
-          '&:hover': {
-            backgroundColor: 'rgba(255, 255, 255, 0.1)'
-          }
-        }}
+      <IconButton 
+        color="inherit"
+        onClick={handleButtonClick}
+        size="large"
+        sx={{ mr: 2 }}
       >
         <Badge badgeContent={notificationsCount} color="error">
-          Notifications
+          <NotificationsIcon />
         </Badge>
-      </Button>
+      </IconButton>
       
       <Menu
         anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
+        open={open}
         onClose={handleClose}
         PaperProps={{
           style: {
@@ -149,13 +158,13 @@ const NotificationTab = () => {
               </Typography>
               
               <Typography variant="body2" sx={{ mt: 0.5 }}>
-                {notification.message.length > 100
+                {notification.message && notification.message.length > 100
                   ? `${notification.message.slice(0, 100)}...`
                   : notification.message}
               </Typography>
               
               <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                From: {notification.sender_name} • {new Date(notification.time).toLocaleString()}
+                From: {notification.sender_name || 'System'} • {new Date(notification.time).toLocaleString()}
               </Typography>
             </Box>
           </MenuItem>
